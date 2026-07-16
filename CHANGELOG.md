@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0
+
+- First stable release of the official Terracotta multiplayer plugin
+- Helper crash auto-recovery: one restart within 10s, then fault; re-create/re-join room when possible
+- EasyTier diagnostics via `easytier-cli peer` when present (NAT / latency / relay); TCP probe fallback
+- Deterministic EasyTier RPC portal per room code
+- Multi-RID native helpers + EasyTier sidecars (win/linux/osx × x64/arm64)
+- Official OpenPGP signing (`5701218D…`); `host.minimumVersion` 1.0.0
+- Plugin UI FontWeight fix; peer exports skipped when Contracts stay private to the plugin ALC
+- Data schema declaration (`schemaVersion` 1)
+
 ## 0.1.0-rc.1
 
 - Helper crash auto-recovery: one restart within 10s, then fault; re-create/re-join room when possible

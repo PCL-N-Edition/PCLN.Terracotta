@@ -2,7 +2,7 @@
 
 Helper 通过可替换的 `RoomBackend` 接入生产网络。默认实现为 `EasyTierRoomBackend`：EasyTier 子进程 + Scaffolding + 本机/ mesh TCP 转发。
 
-当前版本：`0.1.0-rc.1`。
+当前版本：`0.1.0`。
 
 ## 组件边界
 
