@@ -19,7 +19,7 @@ PCL N
       ├─ IPC Session
       ├─ 并发安全 RoomService
       ├─ Scaffolding v1 兼容层
-      └─ EasyTier Backend（待接入）
+      └─ EasyTierRoomBackend（easytier-core sidecar）
 ```
 
 ## 插件端职责
@@ -43,7 +43,7 @@ PCL N
 - 执行协议握手、请求 ID 去重、有界帧处理和稳定错误返回；
 - 在 `RoomService` 内串行化创建、加入、更新 LAN、诊断和退出，并拒绝不可信后端结果；
 - 提供 Scaffolding v1 帧、协议协商、服务端口、玩家资料与心跳兼容层；
-- 通过 `RoomBackend` 边界接入后续 EasyTier 节点、房间凭据、端口转发和中继策略。
+- 通过 `EasyTierRoomBackend` 管理 EasyTier 子进程、房间凭据、Scaffolding 与本机 TCP 转发；跨机端口映射仍在增强中。
 
 ## 依赖方向
 

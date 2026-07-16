@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "id": "cn.pcln.terracotta",
   "name": "陶瓦联机",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "channel": "alpha",
   "summary": "PCL N 官方 Minecraft P2P 联机插件。",
   "description": "通过陶瓦联机 Helper、EasyTier 与 Scaffolding 提供跨启动器的 Minecraft P2P 联机能力。",

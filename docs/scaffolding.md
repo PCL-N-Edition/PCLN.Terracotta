@@ -46,6 +46,6 @@ N bytes body
 
 ## 与 EasyTier 的边界
 
-Scaffolding 服务端只监听 `127.0.0.1` 或 `::1`。后续 EasyTier 后端负责把房主的 Scaffolding 端口和 Minecraft LAN 端口放入临时私有网络，并在成员端创建本地 TCP 转发。Scaffolding 层本身不接收房间密钥、不启动外部进程，也不修改防火墙或系统网卡。
+Scaffolding 服务端只监听 `127.0.0.1` 或 `::1`。`EasyTierRoomBackend` 在房主侧启动 Scaffolding，在成员侧通过本机 TCP 转发接入；跨机仍依赖 EasyTier 用户态连通（alpha.2 另有同机 discovery 路径）。Scaffolding 层本身不接收房间密钥、不启动外部进程，也不修改防火墙或系统网卡。
 
 当前兼容语义参考 PCL CE 公开的 Scaffolding v1 实现；Terracotta 额外增加了帧上限、未知请求响应、资料约束和明确的协议交集检查。

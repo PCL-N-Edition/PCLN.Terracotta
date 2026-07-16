@@ -20,16 +20,20 @@
 - 已升级到发布版 PCL N Plugin SDK `0.1.1`，移除相邻源码和 `0.1.0` 工具路径兼容；
 - 可选诊断窗口、网络诊断命令、剪贴板复制和脱敏 JSON 报告导出；
 - 身份初始化、secure storage fail-closed 状态处理，以及 Helper 会话内身份种子清零。
+- **alpha.2：** `EasyTierRoomBackend` 默认生产后端、房间凭据派生、EasyTier 子进程生命周期（`--no-tun`）、Scaffolding 接入 create/join、成员本机 TCP 转发、同机 discovery 公告；
+- **alpha.2：** 稳定错误码 `network.easytier-missing` / `network.peer-unreachable` 等，插件映射 `TC-NET-002`–`TC-NET-004`；
+- **alpha.2：** 版本 `0.1.0-alpha.2`，文档 `docs/network.md`。
 
 ## 正在推进
 
-- EasyTier 2.6.x 节点生命周期、房间凭据与本地端口转发适配。
+- EasyTier 跨机用户态端口映射与成员发现（替换本机 discovery 依赖）；
+- NAT 探测、直连/中继质量与 RPC 诊断细化。
 
 ## 后续里程碑
 
-1. Helper RoomService 接入 EasyTier 房间凭据、成员事件和重连；
-2. EasyTier 节点生命周期、NAT 探测、直连/中继与网络质量；
-3. 生产创建/加入响应替换当前 `room.backend-not-ready`；
+1. 跨机 EasyTier 端口映射与对端可达，替换 `network.peer-unreachable` 本机限制；
+2. EasyTier NAT 探测、直连/中继与网络质量上报；
+3. 六 RID `easytier-core` 制品纳入 `.pnp` 与 CI；
 4. 解决公共 Contracts 的默认 ALC 共享机制并注册四个插件导出；
 5. 跨 PCL N、PCL CE 和其他兼容启动器的端到端联机测试；
 6. 完整许可证、SBOM、第三方许可、官方签名和商店审核发布。

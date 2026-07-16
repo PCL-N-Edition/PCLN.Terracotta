@@ -78,7 +78,7 @@ public sealed class HelperIpcClient : IAsyncDisposable
             if (string.Equals(inbound.Type, HelperMessageTypes.Error, StringComparison.Ordinal))
             {
                 HelperError error = inbound.ReadPayload<HelperError>(JsonOptions);
-                throw new HelperProtocolException($"{error.Code}: {error.Message}");
+                throw new HelperProtocolException(error.Code, error.Message);
             }
             if (!string.Equals(inbound.Type, expectedResponseType, StringComparison.Ordinal))
                 throw new HelperProtocolException($"Unexpected Helper response type: {inbound.Type}.");

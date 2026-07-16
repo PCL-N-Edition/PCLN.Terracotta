@@ -3,6 +3,7 @@ use std::{net::SocketAddr, sync::Arc};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
+use zeroize::Zeroizing;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -150,7 +151,7 @@ impl RoomError {
         }
     }
 
-    fn invalid(message: impl Into<String>) -> Self {
+    pub(crate) fn invalid(message: impl Into<String>) -> Self {
         Self::new("room.invalid-request", message, false)
     }
 
@@ -173,6 +174,8 @@ pub struct BackendRoom {
 
 #[async_trait]
 pub trait RoomBackend: Send + Sync {
+    async fn set_identity(&self, identity: Zeroizing<[u8; 32]>);
+
     async fn create(&self, request: &CreateRoomRequest) -> Result<BackendRoom, RoomError>;
 
     async fn join(&self, request: &JoinRoomRequest) -> Result<BackendRoom, RoomError>;
@@ -184,40 +187,6 @@ pub trait RoomBackend: Send + Sync {
     async fn leave(&self) -> Result<(), RoomError>;
 }
 
-#[derive(Default)]
-struct UnavailableBackend;
-
-#[async_trait]
-impl RoomBackend for UnavailableBackend {
-    async fn create(&self, _request: &CreateRoomRequest) -> Result<BackendRoom, RoomError> {
-        Err(backend_not_ready())
-    }
-
-    async fn join(&self, _request: &JoinRoomRequest) -> Result<BackendRoom, RoomError> {
-        Err(backend_not_ready())
-    }
-
-    async fn set_lan_address(&self, _address: SocketAddr) -> Result<(), RoomError> {
-        Err(backend_not_ready())
-    }
-
-    async fn diagnose(&self) -> Result<NetworkStatus, RoomError> {
-        Err(backend_not_ready())
-    }
-
-    async fn leave(&self) -> Result<(), RoomError> {
-        Ok(())
-    }
-}
-
-fn backend_not_ready() -> RoomError {
-    RoomError::new(
-        "room.backend-not-ready",
-        "The Terracotta network backend is not available in this preview build.",
-        false,
-    )
-}
-
 pub struct RoomService {
     state: Mutex<RoomSnapshot>,
     backend: Arc<dyn RoomBackend>,
@@ -225,7 +194,7 @@ pub struct RoomService {
 
 impl Default for RoomService {
     fn default() -> Self {
-        Self::new(Arc::new(UnavailableBackend))
+        Self::new(Arc::new(crate::network::EasyTierRoomBackend::new()))
     }
 }
 
@@ -235,6 +204,10 @@ impl RoomService {
             state: Mutex::new(RoomSnapshot::idle()),
             backend,
         }
+    }
+
+    pub async fn initialize_identity(&self, identity: Zeroizing<[u8; 32]>) {
+        self.backend.set_identity(identity).await;
     }
 
     pub async fn status(&self) -> RoomSnapshot {
@@ -507,6 +480,8 @@ mod tests {
 
     #[async_trait]
     impl RoomBackend for TestBackend {
+        async fn set_identity(&self, _identity: zeroize::Zeroizing<[u8; 32]>) {}
+
         async fn create(&self, _request: &CreateRoomRequest) -> Result<BackendRoom, RoomError> {
             Ok(room("AB12-CD34-EF56", None))
         }
@@ -530,6 +505,10 @@ mod tests {
 
     #[async_trait]
     impl RoomBackend for InvalidJoinBackend {
+        async fn set_identity(&self, identity: zeroize::Zeroizing<[u8; 32]>) {
+            TestBackend.set_identity(identity).await;
+        }
+
         async fn create(&self, request: &CreateRoomRequest) -> Result<BackendRoom, RoomError> {
             TestBackend.create(request).await
         }
@@ -625,8 +604,18 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn unavailable_backend_records_stable_fault() {
+    async fn missing_network_runtime_records_stable_fault() {
+        // SAFETY: isolate EasyTier resolution for this unit test.
+        unsafe {
+            std::env::set_var(
+                "TERRACOTTA_EASYTIER_PATH",
+                std::env::temp_dir().join("terracotta-missing-easytier-core-service"),
+            );
+        }
         let service = RoomService::default();
+        service
+            .initialize_identity(zeroize::Zeroizing::new([3_u8; 32]))
+            .await;
         let error = service
             .create(CreateRoomRequest {
                 game_session_id: "session-1".into(),
@@ -637,13 +626,16 @@ mod tests {
             .await
             .unwrap_err();
 
-        assert_eq!(error.code, "room.backend-not-ready");
+        assert_eq!(error.code, "network.easytier-missing");
         let snapshot = service.status().await;
         assert_eq!(snapshot.state, RoomState::Faulted);
         assert_eq!(
             snapshot.error_code.as_deref(),
-            Some("room.backend-not-ready")
+            Some("network.easytier-missing")
         );
+        unsafe {
+            std::env::remove_var("TERRACOTTA_EASYTIER_PATH");
+        }
     }
 
     #[tokio::test]

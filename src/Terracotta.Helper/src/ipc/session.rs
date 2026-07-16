@@ -182,6 +182,7 @@ where
                 match serde_json::from_value::<IdentityInitializeRequest>(request.payload) {
                     Ok(payload) => match decode_identity(payload) {
                         Some(private_key) => {
+                            room.initialize_identity(private_key.clone()).await;
                             identity = Some(private_key);
                             write_response(
                                 stream,
@@ -409,6 +410,8 @@ mod tests {
 
     #[async_trait]
     impl RoomBackend for TestBackend {
+        async fn set_identity(&self, _identity: zeroize::Zeroizing<[u8; 32]>) {}
+
         async fn create(&self, _request: &CreateRoomRequest) -> Result<BackendRoom, RoomError> {
             Ok(BackendRoom {
                 room_code: "AB12-CD34-EF56".into(),
@@ -475,7 +478,7 @@ mod tests {
                 json!({
                     "authToken": token,
                     "client": "pcln",
-                    "clientVersion": "0.1.0-alpha.1"
+                    "clientVersion": "0.1.0-alpha.2"
                 }),
             ),
         )
@@ -523,7 +526,7 @@ mod tests {
                 json!({
                     "authToken": supplied,
                     "client": "pcln",
-                    "clientVersion": "0.1.0-alpha.1"
+                    "clientVersion": "0.1.0-alpha.2"
                 }),
             ),
         )
@@ -556,7 +559,7 @@ mod tests {
                 json!({
                     "authToken": token,
                     "client": "pcln",
-                    "clientVersion": "0.1.0-alpha.1"
+                    "clientVersion": "0.1.0-alpha.2"
                 }),
             ),
         )

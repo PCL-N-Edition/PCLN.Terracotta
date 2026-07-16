@@ -374,12 +374,25 @@ public sealed class TerracottaController : ITerracottaRoomService, IAsyncDisposa
         {
             SecureIdentityException => ErrorCodeCatalog.SecureStorageUnavailable,
             FileNotFoundException => ErrorCodeCatalog.HelperMissing,
-            HelperProtocolException => ErrorCodeCatalog.HelperDisconnected,
+            HelperProtocolException protocol => MapHelperErrorCode(protocol.Code),
             _ => ErrorCodeCatalog.NetworkUnavailable
         };
         PublishFault(code, SensitiveDataRedactor.Redact(exception.Message));
         _context.Logger.LogError($"Terracotta operation failed ({code}).", exception);
     }
+
+    private static string MapHelperErrorCode(string? helperCode) => helperCode switch
+    {
+        "network.easytier-missing" => ErrorCodeCatalog.EasyTierMissing,
+        "network.easytier-start-failed" or "network.easytier-stop-failed" => ErrorCodeCatalog.EasyTierStartFailed,
+        "network.peer-unreachable" => ErrorCodeCatalog.PeerUnreachable,
+        "room.invalid-code" => ErrorCodeCatalog.InvalidRoomCode,
+        "identity.not-initialized" or "identity.invalid-key" => ErrorCodeCatalog.SecureStorageUnavailable,
+        null or "" => ErrorCodeCatalog.HelperDisconnected,
+        _ when helperCode.StartsWith("network.", StringComparison.Ordinal) => ErrorCodeCatalog.NetworkUnavailable,
+        _ when helperCode.StartsWith("ipc.", StringComparison.Ordinal) => ErrorCodeCatalog.HelperDisconnected,
+        _ => ErrorCodeCatalog.NetworkUnavailable
+    };
 
     private void PublishFault(string code, string message)
     {

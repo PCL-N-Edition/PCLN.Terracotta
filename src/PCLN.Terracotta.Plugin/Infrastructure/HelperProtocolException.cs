@@ -11,4 +11,12 @@ public sealed class HelperProtocolException : Exception
         : base(message, innerException)
     {
     }
+
+    public HelperProtocolException(string? code, string message)
+        : base(string.IsNullOrWhiteSpace(code) ? message : $"{code}: {message}")
+    {
+        Code = code;
+    }
+
+    public string? Code { get; }
 }

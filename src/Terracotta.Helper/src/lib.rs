@@ -2,6 +2,7 @@ pub mod bootstrap;
 pub mod cli;
 pub mod error;
 pub mod ipc;
+pub mod network;
 pub mod platform;
 pub mod protocol;
 pub mod room;

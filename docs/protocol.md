@@ -33,7 +33,7 @@
   "payload": {
     "authToken": "<64 lowercase hex>",
     "client": "pcln",
-    "clientVersion": "0.1.0-alpha.1"
+    "clientVersion": "0.1.0-alpha.2"
   }
 }
 ```
@@ -72,11 +72,11 @@
 | `room.status` | `room.status.result` | 已实现，返回当前房间快照 |
 | `room.leave` | `room.left` | 已实现并清理后端 |
 | `shutdown` | `shutdown.accepted` 后 EOF | 已实现 |
-| `room.create` | `room.created` / `error` | 已接房间服务；生产 EasyTier 后端待接入 |
-| `room.join` | `room.joined` / `error` | 已接房间服务；生产 EasyTier 后端待接入 |
+| `room.create` | `room.created` / `error` | 已接 `EasyTierRoomBackend`；缺 sidecar 时 `network.easytier-missing` |
+| `room.join` | `room.joined` / `error` | 已接后端 + 本机 discovery；跨机映射见 `docs/network.md` |
 | `room.set-lan-address` | `room.state-changed` | 已实现，仅房主 Connected 状态可用 |
 | `network.diagnose` | `diagnostic.updated` | 已实现，后端返回网络快照 |
 
 未知消息返回 `ipc.unknown-message-type`；重复请求 ID 返回 `ipc.duplicate-request-id`；单连接最多记录 4096 个请求 ID。
 
-房间服务会独立校验 Minecraft 地址必须为 loopback、端口非零、会话 ID 有界，并把房间码规范化为 `XXXX-XXXX-XXXX`。生产网络后端未安装时，创建或加入会进入 `Faulted` 并返回 `room.backend-not-ready`；测试通过注入后端验证完整成功路径。
+房间服务会独立校验 Minecraft 地址必须为 loopback、端口非零、会话 ID 有界，并把房间码规范化为 `XXXX-XXXX-XXXX`。默认后端在同目录找不到 `easytier-core` 时进入 `Faulted` 并返回 `network.easytier-missing`；测试可通过注入 `RoomBackend` 验证完整成功路径。

@@ -82,7 +82,7 @@ public sealed class FoundationTests
         PluginProcessResult process = new(1, "token=abc123", "private-key:xyz");
 
         string json = DiagnosticCollector.CreateJson(
-            "0.1.0-alpha.1",
+            "0.1.0-alpha.2",
             "0.1.0",
             snapshot,
             process,

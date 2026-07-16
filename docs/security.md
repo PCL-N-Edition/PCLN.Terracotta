@@ -40,3 +40,11 @@
 - 玩家名、机器 ID、厂商字段均有长度和控制字符约束，远端声明的角色会被服务端覆盖为 Guest；
 - 心跳失活成员在 10 秒后清理，房主身份不能被远端机器 ID 覆盖；
 - 未知请求返回有界错误，不等待到连接超时。
+
+## EasyTier 与房间凭据
+
+- EasyTier 以 Helper 子进程运行，使用 `--no-tun`，不申请管理员、不创建永久虚拟网卡；
+- `network-secret` 经环境变量注入子进程，不写入 Helper 参数列表或诊断日志；
+- 房间网络密钥由房间码与协议根派生，离房后清零；
+- 本机 discovery 公告仅含 loopback 端点，Unix 下目录/文件权限限制为当前用户；
+- 缺失 sidecar 时 fail closed，返回 `network.easytier-missing`。
