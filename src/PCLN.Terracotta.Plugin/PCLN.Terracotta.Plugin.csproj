@@ -15,6 +15,7 @@
     <!-- PCLN.Plugin.Sdk.Build 0.1.0 accidentally duplicated net10.0 in its package path. -->
     <PclNPluginBuildTool Condition="'$(PclNPluginBuildTool)' == '' and Exists('$(NuGetPackageRoot)pcln.plugin.sdk.build/0.1.0/tools/net10.0/net10.0/PCL.N.Plugin.Sdk.Build.dll')">$(NuGetPackageRoot)pcln.plugin.sdk.build/0.1.0/tools/net10.0/net10.0/PCL.N.Plugin.Sdk.Build.dll</PclNPluginBuildTool>
     <TerracottaRequireNativeHelpers Condition="'$(TerracottaRequireNativeHelpers)' == ''">false</TerracottaRequireNativeHelpers>
+    <DefineConstants Condition="'$(TerracottaUseLocalSdk)' == 'true'">$(DefineConstants);TERRACOTTA_PACKAGE_ASSETS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../PCLN.Terracotta.Contracts/PCLN.Terracotta.Contracts.csproj" />

@@ -18,7 +18,7 @@ type TestStream = tokio::net::UnixStream;
 
 #[tokio::test]
 async fn real_helper_handshakes_reports_status_and_exits_after_shutdown() {
-    let temporary = tempfile::tempdir().unwrap();
+    let temporary = test_directory();
     let nonce = nonce();
     let endpoint = endpoint(temporary.path(), &nonce);
     let token = "a".repeat(64);
@@ -128,6 +128,18 @@ fn nonce() -> String {
         .unwrap()
         .as_nanos();
     format!("{nanos:032x}")
+}
+
+fn test_directory() -> tempfile::TempDir {
+    #[cfg(target_os = "macos")]
+    let base = Path::new("/tmp");
+    #[cfg(not(target_os = "macos"))]
+    let base = std::env::temp_dir();
+
+    tempfile::Builder::new()
+        .prefix("tc-")
+        .tempdir_in(base)
+        .unwrap()
 }
 
 #[cfg(windows)]
