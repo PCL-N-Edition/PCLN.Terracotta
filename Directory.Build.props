@@ -8,7 +8,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <Deterministic>true</Deterministic>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <Authors>PCL N contributors</Authors>
     <Company>PCL N</Company>
     <Product>PCL N Terracotta Plugin</Product>
