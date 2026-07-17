@@ -90,6 +90,21 @@
         ]
       },
       {
+        "target": "pcl.page.launch",
+        "surface": ">=3.0 <4.0",
+        "access": ["inject"],
+        "operations": [
+          {
+            "id": "cn.pcln.terracotta.launch-contribution",
+            "kind": "inject",
+            "slot": "primary-actions.after",
+            "priority": 420,
+            "required": false,
+            "fallback": "disable-feature"
+          }
+        ]
+      },
+      {
         "target": "pcl.window.main",
         "surface": ">=1.0 <2.0",
         "access": ["window-management"],

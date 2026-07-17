@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using Cn.Pcln.Terracotta.Application;
 using Cn.Pcln.Terracotta.Contracts;
 using Cn.Pcln.Terracotta.Diagnostics;
@@ -12,6 +13,29 @@ namespace Cn.Pcln.Terracotta.Plugin.Tests;
 [TestClass]
 public sealed class FoundationTests
 {
+    [TestMethod]
+    public void ManifestDeclaresRuntimeLaunchContribution()
+    {
+        string manifestPath = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory,
+            "..", "..", "..", "..", "..",
+            "src", "PCLN.Terracotta.Plugin", "plugin.json"));
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        JsonElement target = document.RootElement.GetProperty("ui").GetProperty("targets")
+            .EnumerateArray()
+            .Single(item => item.GetProperty("target").GetString() == "pcl.page.launch");
+        JsonElement operation = target.GetProperty("operations").EnumerateArray()
+            .Single(item => item.GetProperty("id").GetString() == PluginIds.LaunchContribution);
+
+        CollectionAssert.Contains(
+            target.GetProperty("access").EnumerateArray().Select(item => item.GetString()).ToArray(),
+            "inject");
+        Assert.AreEqual("inject", operation.GetProperty("kind").GetString());
+        Assert.AreEqual("primary-actions.after", operation.GetProperty("slot").GetString());
+        Assert.IsFalse(operation.GetProperty("required").GetBoolean());
+        Assert.AreEqual("disable-feature", operation.GetProperty("fallback").GetString());
+    }
+
     [TestMethod]
     public void RoomStateMachineAcceptsDocumentedHappyPath()
     {
