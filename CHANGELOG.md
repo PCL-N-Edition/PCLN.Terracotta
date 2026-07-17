@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1
+
+- Upgrade to PCL N Plugin SDK 0.2.0 while retaining the public API range `>=0.1 <1.0`
+- Add Simplified Chinese and English localization for navigation, commands, room states, diagnostics, and task progress
+- Add an optional native PclUi shortcut card on the launch page
+- Report room connection, network diagnostics, and diagnostics export through cancellable host background tasks
+- Treat game output, secure storage, clipboard, diagnostics windows, and UI injection as optional capabilities with graceful fallback
+- Use a stable session-only identity when secure storage is unavailable
+
 ## 0.1.0
 
 - First stable release of the official Terracotta multiplayer plugin

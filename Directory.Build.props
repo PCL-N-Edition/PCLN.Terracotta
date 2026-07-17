@@ -8,12 +8,12 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <Deterministic>true</Deterministic>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>PCL N contributors</Authors>
     <Company>PCL N</Company>
     <Product>PCL N Terracotta Plugin</Product>
     <Copyright>Copyright 2026 PCL N contributors</Copyright>
-    <RepositoryUrl>https://github.com/MuXue1230-owo/PCLN.Terracotta</RepositoryUrl>
+    <RepositoryUrl>https://github.com/PCL-N-Edition/PCLN.Terracotta</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 </Project>
