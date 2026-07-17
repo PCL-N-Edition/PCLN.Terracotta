@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.3
+
+- Fix plugin unload verification during update and disable by canceling and awaiting owned tasks
+- Close plugin-owned diagnostics windows and detach UI event subscriptions during shutdown
+- Avoid Helper process shutdown lock inversion while waiting for the tracked process task
+- Keep the optimized package layout without optional EasyTier CLI sidecars
+
+## 0.1.2
+
+- Declare the launch-page shortcut as an explicit runtime `inject` operation
+- Reduce package size by omitting optional EasyTier CLI diagnostics sidecars
+
 ## 0.1.1
 
 - Upgrade to PCL N Plugin SDK 0.2.0 while retaining the public API range `>=0.1 <1.0`

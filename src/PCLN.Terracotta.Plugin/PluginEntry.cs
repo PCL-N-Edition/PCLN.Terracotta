@@ -9,12 +9,15 @@ namespace Cn.Pcln.Terracotta;
 public sealed class PluginEntry : IPclNPlugin, IAsyncDisposable
 {
     private TerracottaController? _controller;
+    private IPluginContext? _context;
+    private IAvaloniaPluginWindowService? _windows;
 
     public ValueTask InitializeAsync(IPluginContext context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
 
+        _context = context;
         IPluginSettingsStore settings = context.Services.Require<IPluginSettingsStore>();
         IPluginCommandService commands = context.Services.Require<IPluginCommandService>();
         IPluginTaskService tasks = context.Services.Require<IPluginTaskService>();
@@ -28,6 +31,7 @@ public sealed class PluginEntry : IPclNPlugin, IAsyncDisposable
         context.Services.TryGet<PclUiService>(out PclUiService? pclUi);
         context.Services.TryGet<IPluginBackgroundTaskService>(out IPluginBackgroundTaskService? backgroundTasks);
         context.Services.TryGet<IAvaloniaPluginWindowService>(out IAvaloniaPluginWindowService? windows);
+        _windows = windows;
         context.Services.TryGet<IPluginPackageAssetService>(out IPluginPackageAssetService? packageAssets);
         context.Services.TryGet<IPluginSecureStorage>(out IPluginSecureStorage? secureStorage);
         if (secureStorage is null)
@@ -121,10 +125,26 @@ public sealed class PluginEntry : IPclNPlugin, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_windows is not null && _context is not null)
+        {
+            IAvaloniaPluginWindowService windows = _windows;
+            await _context.Dispatcher.InvokeAsync(() =>
+            {
+                foreach (TerracottaDiagnosticsWindow window in windows.ListOpenWindows().OfType<TerracottaDiagnosticsWindow>().ToArray())
+                {
+                    window.Dispose();
+                    window.Close();
+                }
+            }).ConfigureAwait(false);
+        }
+
         if (_controller is not null)
         {
             await _controller.DisposeAsync().ConfigureAwait(false);
             _controller = null;
         }
+
+        _windows = null;
+        _context = null;
     }
 }

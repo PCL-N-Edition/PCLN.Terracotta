@@ -33,11 +33,15 @@ public sealed class TerracottaController :
     private readonly IPluginBackgroundTaskService? _backgroundTasks;
     private readonly RoomStateMachine _stateMachine = new();
     private readonly SemaphoreSlim _operationGate = new(1, 1);
+    private readonly CancellationTokenSource _shutdown = new();
+    private readonly object _taskSync = new();
+    private readonly List<IPluginTaskRegistration> _ownedTasks = [];
     private long _operationSequence;
     private TerracottaRoomSnapshot _snapshot = TerracottaRoomSnapshot.Idle;
     private TerracottaCreateRoomRequest? _pendingCreate;
     private TerracottaSettings _settings = new();
     private bool _started;
+    private int _disposed;
     private CancellationTokenSource? _statusPollCts;
     private RecoveryIntent? _recovery;
 
@@ -418,9 +422,34 @@ public sealed class TerracottaController :
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
+        await _shutdown.CancelAsync().ConfigureAwait(false);
         StopStatusPolling();
         _helper.PushEventReceived -= OnHelperPushEvent;
         _helperProcess.HelperProcessExited -= OnHelperProcessExited;
+        SnapshotChanged = null;
+
+        IPluginTaskRegistration[] tasks;
+        lock (_taskSync)
+        {
+            tasks = _ownedTasks.ToArray();
+            _ownedTasks.Clear();
+        }
+
+        foreach (IPluginTaskRegistration task in tasks)
+        {
+            try
+            {
+                await task.DisposeAsync().ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                _context.Logger.Warn($"Terracotta task cleanup failed: {SensitiveDataRedactor.Redact(exception.Message)}");
+            }
+        }
+
         try
         {
             await LeaveAsync(CancellationToken.None).ConfigureAwait(false);
@@ -429,6 +458,7 @@ public sealed class TerracottaController :
         {
             await _helperProcess.DisposeAsync().ConfigureAwait(false);
             _operationGate.Dispose();
+            _shutdown.Dispose();
         }
     }
 
@@ -707,8 +737,30 @@ public sealed class TerracottaController :
 
     private void QueueOperation(string name, Func<CancellationToken, Task> operation)
     {
+        if (Volatile.Read(ref _disposed) != 0)
+            return;
+
         long sequence = Interlocked.Increment(ref _operationSequence);
-        _context.Lifetime.Track(_tasks.Run($"{PluginIds.Plugin}.{name}.{sequence}", operation));
+        TrackOwnedTask(_tasks.Run($"{PluginIds.Plugin}.{name}.{sequence}", async token =>
+        {
+            using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(token, _shutdown.Token);
+            await operation(linked.Token).ConfigureAwait(false);
+        }));
+    }
+
+    private void TrackOwnedTask(IPluginTaskRegistration task)
+    {
+        lock (_taskSync)
+        {
+            if (Volatile.Read(ref _disposed) == 0)
+            {
+                _ownedTasks.Add(task);
+                _context.Lifetime.Track(task);
+                return;
+            }
+        }
+
+        task.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
     private async Task LoadSettingsAsync(CancellationToken cancellationToken)
@@ -920,7 +972,7 @@ public sealed class TerracottaController :
         StopStatusPolling();
         CancellationTokenSource cts = new();
         _statusPollCts = cts;
-        _context.Lifetime.Track(_tasks.Run($"{PluginIds.Plugin}.status-poll", async token =>
+        TrackOwnedTask(_tasks.Run($"{PluginIds.Plugin}.status-poll.{Interlocked.Increment(ref _operationSequence)}", async token =>
         {
             using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(token, cts.Token);
             while (!linked.IsCancellationRequested)

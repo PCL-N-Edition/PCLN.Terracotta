@@ -7,10 +7,11 @@ using Cn.Pcln.Terracotta.Services;
 
 namespace Cn.Pcln.Terracotta.Views;
 
-public sealed class TerracottaDiagnosticsWindow : Window
+public sealed class TerracottaDiagnosticsWindow : Window, IDisposable
 {
     private readonly TerracottaController _controller;
     private readonly TextBox _report;
+    private int _detached;
 
     public TerracottaDiagnosticsWindow(TerracottaController controller, TerracottaLocalizer localizer)
     {
@@ -77,8 +78,12 @@ public sealed class TerracottaDiagnosticsWindow : Window
 
     private void OnSnapshotChanged(object? sender, TerracottaRoomSnapshot snapshot) => Render();
 
-    private void OnClosed(object? sender, EventArgs eventArgs)
+    private void OnClosed(object? sender, EventArgs eventArgs) => Dispose();
+
+    public void Dispose()
     {
+        if (Interlocked.Exchange(ref _detached, 1) != 0)
+            return;
         _controller.SnapshotChanged -= OnSnapshotChanged;
         Closed -= OnClosed;
     }

@@ -24,7 +24,7 @@ public sealed class HelperProcessManager : IAsyncDisposable
     private string? _lastHelperVersion;
     private int _crashCount;
     private DateTimeOffset _crashWindowStart = DateTimeOffset.MinValue;
-    private bool _intentionalStop;
+    private volatile bool _intentionalStop;
     private int _generation;
 
     public HelperProcessManager(
@@ -133,7 +133,8 @@ public sealed class HelperProcessManager : IAsyncDisposable
             }
             finally
             {
-                await OnProcessEndedAsync(generation).ConfigureAwait(false);
+                if (!_intentionalStop)
+                    await OnProcessEndedAsync(generation).ConfigureAwait(false);
             }
         });
 

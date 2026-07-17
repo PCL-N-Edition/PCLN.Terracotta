@@ -9,7 +9,7 @@ using Cn.Pcln.Terracotta.Services;
 
 namespace Cn.Pcln.Terracotta.Views;
 
-public sealed class TerracottaPage : UserControl
+public sealed class TerracottaPage : UserControl, IDisposable
 {
     private readonly TerracottaController _controller;
     private readonly TerracottaLocalizer _localizer;
@@ -20,6 +20,7 @@ public sealed class TerracottaPage : UserControl
     private readonly StackPanel _roomActions;
     private readonly TextBlock _roomCodeText;
     private readonly TextBlock _addressText;
+    private int _detached;
 
     public TerracottaPage(TerracottaController controller, TerracottaLocalizer localizer)
     {
@@ -126,8 +127,12 @@ public sealed class TerracottaPage : UserControl
 
     private void OnSnapshotChanged(object? sender, TerracottaRoomSnapshot snapshot) => Render(snapshot);
 
-    private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs eventArgs)
+    private void OnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs eventArgs) => Dispose();
+
+    public void Dispose()
     {
+        if (Interlocked.Exchange(ref _detached, 1) != 0)
+            return;
         _controller.SnapshotChanged -= OnSnapshotChanged;
         DetachedFromVisualTree -= OnDetachedFromVisualTree;
     }
