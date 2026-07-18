@@ -8,6 +8,4 @@ public sealed class TerracottaLocalizer(IPluginLocalizationService localization)
 
     public string Format(string key, string fallback, params object?[] arguments) =>
         localization.FormatString(key, fallback, arguments);
-
-    public static PclUiString Ui(string key, string fallback) => PclUiString.Localized(key, fallback);
 }

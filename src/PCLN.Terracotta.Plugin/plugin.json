@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "id": "cn.pcln.terracotta",
   "name": "陶瓦联机",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "channel": "stable",
   "summary": "PCL N 官方 Minecraft P2P 联机插件。",
   "description": "通过陶瓦联机 Helper、EasyTier 与 Scaffolding 提供跨启动器的 Minecraft P2P 联机能力。",
@@ -42,7 +42,6 @@
     },
     "optional": {
       "pcl.ui.avalonia.windows": ">=0.1 <1.0",
-      "pcl.ui.components": ">=0.1 <1.0",
       "pcl.background-tasks": ">=0.1 <1.0",
       "pcl.game.output": ">=0.1 <1.0",
       "pcl.clipboard": ">=0.1 <1.0",
@@ -64,8 +63,7 @@
     { "id": "process.output", "reason": "读取联机核心输出以生成错误诊断。", "kind": "optional" },
     { "id": "clipboard.write", "reason": "复制房间码、连接地址和诊断报告。", "kind": "optional" },
     { "id": "ui.window-management", "reason": "打开独立网络诊断窗口。", "kind": "optional" },
-    { "id": "secure-storage", "reason": "使用系统安全存储保存长期身份密钥。", "kind": "optional" },
-    { "id": "ui.inject", "reason": "在启动页显示陶瓦联机快捷入口。", "kind": "optional" }
+    { "id": "secure-storage", "reason": "使用系统安全存储保存长期身份密钥。", "kind": "optional" }
   ],
   "localization": {
     "defaultCulture": "zh-CN",
@@ -86,21 +84,6 @@
             "kind": "register",
             "required": true,
             "fallback": "fail-load"
-          }
-        ]
-      },
-      {
-        "target": "pcl.page.launch",
-        "surface": ">=3.0 <4.0",
-        "access": ["inject"],
-        "operations": [
-          {
-            "id": "cn.pcln.terracotta.launch-contribution",
-            "kind": "inject",
-            "slot": "primary-actions.after",
-            "priority": 420,
-            "required": false,
-            "fallback": "disable-feature"
           }
         ]
       },

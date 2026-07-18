@@ -28,7 +28,6 @@ public sealed class PluginEntry : IPclNPlugin, IAsyncDisposable
         IPluginLocalizationService localization = context.Services.Require<IPluginLocalizationService>();
         TerracottaLocalizer localizer = new(localization);
         IAvaloniaPluginPageService pages = context.Services.Require<IAvaloniaPluginPageService>();
-        context.Services.TryGet<PclUiService>(out PclUiService? pclUi);
         context.Services.TryGet<IPluginBackgroundTaskService>(out IPluginBackgroundTaskService? backgroundTasks);
         context.Services.TryGet<IAvaloniaPluginWindowService>(out IAvaloniaPluginWindowService? windows);
         _windows = windows;
@@ -75,39 +74,6 @@ public sealed class PluginEntry : IPclNPlugin, IAsyncDisposable
                 PluginIds.DiagnosticsWindowRegistration,
                 PluginIds.DiagnosticsWindow,
                 () => new TerracottaDiagnosticsWindow(_controller, localizer))));
-        }
-
-        if (pclUi is not null)
-        {
-            context.Lifetime.Track(pclUi.Inject(new PclUiContribution
-            {
-                OperationId = PluginIds.LaunchContribution,
-                Target = new UiTargetId("pcl.page.launch"),
-                Slot = "primary-actions.after",
-                Title = TerracottaLocalizer.Ui("terracotta.title", "陶瓦联机"),
-                Order = 420,
-                Content = new PclUiCard
-                {
-                    Title = TerracottaLocalizer.Ui("terracotta.title", "陶瓦联机"),
-                    Content = new PclUiStack
-                    {
-                        Spacing = 10,
-                        Children =
-                        [
-                            new PclUiText
-                            {
-                                Text = TerracottaLocalizer.Ui("terracotta.quick.description", "创建或加入陶瓦房间，与好友快速建立 Minecraft 联机。")
-                            },
-                            new PclUiButton
-                            {
-                                Text = TerracottaLocalizer.Ui("terracotta.open", "打开陶瓦联机"),
-                                Style = PclUiButtonStyle.Primary,
-                                CommandId = PluginIds.JoinRoomCommand
-                            }
-                        ]
-                    }
-                }
-            }));
         }
 
         _controller.RegisterCommands();

@@ -5,7 +5,6 @@ public static class PluginIds
     public const string Plugin = "cn.pcln.terracotta";
     public const string PageRegistration = Plugin + ".page-registration";
     public const string PageRoute = Plugin + ".page";
-    public const string LaunchContribution = Plugin + ".launch-contribution";
     public const string DiagnosticsWindowRegistration = Plugin + ".diagnostics-window-registration";
     public const string DiagnosticsWindow = Plugin + ".diagnostics-window";
 

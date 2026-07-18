@@ -89,4 +89,5 @@ public sealed class TerracottaDiagnosticsWindow : Window, IDisposable
     }
 
     private void Render() => _report.Text = _controller.CreateDiagnosticReportJson();
+
 }

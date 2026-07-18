@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- Remove the launch-page shortcut card while retaining the plugin-owned main navigation page
+- Keep Terracotta functionality isolated in the plugin and injected through host extension APIs
+
 ## 0.1.3
 
 - Fix plugin unload verification during update and disable by canceling and awaiting owned tasks
