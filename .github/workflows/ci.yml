@@ -75,12 +75,9 @@ jobs:
           EASYTIER_VERSION: ${{ vars.EASYTIER_VERSION }}
         run: |
           set -euo pipefail
-          version="${EASYTIER_VERSION:-}"
-          if [[ -z "$version" ]]; then
-            echo "EASYTIER_VERSION repository variable is unset; the package job will reject the incomplete runtime."
-            exit 0
-          fi
-          # Optional opt-in: set repo variable EASYTIER_VERSION (e.g. 2.6.4) to download official EasyTier assets.
+          # Keep CI reproducible without repository setup while still allowing an
+          # explicitly tested EasyTier release to be selected through a variable.
+          version="${EASYTIER_VERSION:-2.6.4}"
           rid="${{ matrix.rid }}"
           case "$rid" in
             win-x64) asset="easytier-windows-x86_64-v${version}.zip"; bin="easytier-core.exe" ;;
@@ -94,14 +91,14 @@ jobs:
           url="https://github.com/EasyTier/EasyTier/releases/download/v${version}/${asset}"
           tmp="$(mktemp -d)"
           if ! curl -fsSL "$url" -o "$tmp/$asset"; then
-            echo "Failed to download $url; continuing without EasyTier sidecar."
-            exit 0
+            echo "Failed to download required EasyTier runtime: $url"
+            exit 1
           fi
           unzip -qo "$tmp/$asset" -d "$tmp/out"
           found="$(find "$tmp/out" -type f -name "$bin" | head -n 1 || true)"
           if [[ -z "$found" ]]; then
-            echo "EasyTier archive did not contain $bin; continuing without sidecar."
-            exit 0
+            echo "EasyTier archive did not contain required executable $bin."
+            exit 1
           fi
           cp "$found" "native/${rid}/$bin"
           chmod +x "native/${rid}/$bin" || true
